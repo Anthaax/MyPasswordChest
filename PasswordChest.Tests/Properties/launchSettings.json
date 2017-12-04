@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "PasswordChest.Tests": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Users\\gfimes\\Documents\\MyDev\\PasswordChest\\packages\\NUnit.Runners.Net4.2.6.4\\tools\\nunit.exe",
+      "commandLineArgs": "bin\\Debug\\net462\\PasswordChest.Tests.dll"
+    }
+  }
+}
