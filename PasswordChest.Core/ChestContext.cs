@@ -12,32 +12,57 @@ namespace PasswordChest.Core
     public class ChestContext
     {
         Dictionary<string,string> _users;
+        [field: NonSerialized]
         UserManager _userManager;
         public ChestContext()
         {
             _users = new Dictionary<string, string>();
-            LoadData();
+            Initialize();
+            _userManager = new UserManager(this);
+            UserManager.UserHasBeenCreated += (s, e) => AddUser(s as User);
         }
 
-        private void LoadData()
+        private void Initialize()
         {
-            string folderPath = Environment.CurrentDirectory + Path.DirectorySeparatorChar + Constants.SAVE_FOLDER_NAME;
-            string savePath = folderPath + Path.DirectorySeparatorChar + Constants.SAVE_FILE_NAME;
-            if (!Directory.Exists(folderPath))
-                Directory.CreateDirectory(folderPath);
-            if (!File.Exists(savePath))
+            if (!Directory.Exists(Constants.SaveFolderPath))
+                Directory.CreateDirectory(Constants.SaveFolderPath);
+            if (!File.Exists(Constants.SaveFilePath))
             {
-                File.Create(savePath);
+                SaveContext();
                 return;
             }
-            using (Stream sr = new FileStream(savePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-            {
-                BinaryFormatter formatter = new BinaryFormatter();
-                if (formatter.Deserialize(sr) is ChestContext context)
-                    _users = context._users;
-            }
+            ChestContext loadContext = LoadContext();
+            if (loadContext != null)
+                _users = loadContext._users;
         }
 
         public IEnumerable<string> UsersName => _users.Keys;
+
+        public UserManager Manager => _userManager;
+
+        private void SaveContext()
+        {
+            BinaryFormatter formatter = new BinaryFormatter();
+            using (FileStream fs = new FileStream (Constants.SaveFilePath, FileMode.Create, FileAccess.Write, FileShare.None))
+            {
+                formatter.Serialize(fs, this);
+            }
+        }
+
+        private ChestContext LoadContext()
+        {
+            ChestContext chestContext;
+            BinaryFormatter formatter = new BinaryFormatter();
+            using (Stream sr = new FileStream(Constants.SaveFilePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                chestContext = formatter.Deserialize(sr) as ChestContext;
+            }
+            return chestContext;
+        }
+
+        private void AddUser(User user)
+        {
+            _users.Add(user.FullName, user.GetHashCode().ToString());
+        }
     }
 }

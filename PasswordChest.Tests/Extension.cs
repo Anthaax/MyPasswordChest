@@ -13,10 +13,13 @@ namespace PasswordChest.Tests
         public static void DeleteSave()
         {
             string folderPath = Environment.CurrentDirectory + Path.DirectorySeparatorChar + Constants.SAVE_FOLDER_NAME;
-            string savePath = folderPath + Path.DirectorySeparatorChar + Constants.SAVE_FILE_NAME;
-            if (!File.Exists(savePath))
+            if (!Directory.Exists(folderPath))
                 return;
-            File.Delete(savePath);
+            DirectoryInfo di = new DirectoryInfo(folderPath);
+            foreach (FileInfo file in di.GetFiles())
+                file.Delete();
+            foreach (DirectoryInfo dir in di.GetDirectories())
+                dir.Delete(true);
         }
     }
 }
